@@ -1,33 +1,38 @@
 import { parse } from 'url'
-import { _parse } from 'query-string'
 
-function assert(e, msg) {
+/**
+ * A simple assert.
+ */
+
+export function assert(e, msg) {
   if (!e) throw new Error(msg)
 }
 
-// TODO: Support url hash paths.
-export default function router(match, dispatch/*, hash **/) {
-  const _window = new Function('return this')()
+/**
+ * router accepts a `match` function that returns `params` and `fn`
+ * and a redux like `dispatch` function. It returns wrappers around
+ * the native browser methods for history manipulation methods and
+ * dispatches `fn(url)` whenever history state changes. url is location.href
+ * as parsed by node's `url.parse()` with `params` assigned to it.
+ *
+ * @param {Function} match
+ * @param {Function} dispatch
+ * @return {Object} wrapped history methods.
+ */
+
+export default function router(match, dispatch) {
+  const _window = new Function('return this')() // eslint-disable-line no-new-func
   const dom = !!(_window.document && _window.createElement)
   assert(dom, 'dispatch-router can only be used in a browser env')
-  assert(typeof match === 'function', '`match` must be a matching function')
+  assert(typeof match === 'function', '`match` must be a function')
   assert(typeof dispatch === 'function', '`dispatch` must be a function')
 
-  const {
-    history,
-    history: {
-      pushState,
-      replaceState,
-      forward,
-      back,
-      go,
-    },
-    location,
-  } = _window
+  /**
+   * Respond to `pushState`, `replaceState` or on a `popstate` event.
+   */
 
   function route() {
-    const { href } = location
-    const url = parse(href)
+    const url = parse(window.location.href)
     const { params, fn } = match(url.pathname)
     url.params = params
     dispatch(fn(url))
@@ -36,17 +41,19 @@ export default function router(match, dispatch/*, hash **/) {
   _window.addEventListener('popstate', route)
   route()
 
+  const history = _window.history
+
   return {
     pushState(path) {
-      pushState(null, null, path)
+      history.pushState(null, null, path)
       route()
     },
     replaceState(path) {
-      pushState(null, null, path)
+      history.replaceState(null, null, path)
       route()
     },
-    forward,
-    back,
-    go,
+    forward: history.forward,
+    back: history.back,
+    go: history.go,
   }
 }
