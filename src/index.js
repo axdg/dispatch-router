@@ -1,4 +1,5 @@
-import { parse } from 'url'
+import url from 'url'
+import qs from 'query-string'
 
 /**
  * A simple assert.
@@ -32,10 +33,11 @@ export default function createRouter(match, dispatch) {
    */
 
   function route() {
-    const url = parse(_window.location.href)
-    const { params, fn } = match(url.pathname)
-    url.params = params
-    dispatch(fn(url))
+    const _url = JSON.parse(JSON.stringify(url.parse(_window.location.href)))
+    const { params, fn } = match(_url.pathname)
+    _url.params = params
+    if (_url.search) url.query = qs.parse(search)
+    dispatch(fn(_url))
   }
 
   _window.addEventListener('popstate', route)

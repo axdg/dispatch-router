@@ -4,7 +4,8 @@ import { createStore } from 'redux'
 
 import createRouter from '../src'
 
-function noop(url) { return url }
+const UPDATE_LOCATION = 'UPDATE_LOCATION'
+function noop(url) { return Object.assign(url, { type: UPDATE_LOCATION }) }
 
 function match(path) {
   if (path === '/') {
@@ -35,9 +36,9 @@ function match(path) {
 }
 
 function reducer(state = {}, action) {
-  return {
-    ...action,
-  }
+  const nextState = Object.assign({}, state, action)
+  delete nextState.type
+  return nextState
 }
 
 const { dispatch } = createStore(reducer)
@@ -55,11 +56,40 @@ describe('router()', () => {
     }).toThrow('dispatch')
   })
 
-  it('should return the relevant history methods, wrapped or otherwise', () => {})
+  it('should return the relevant history methods, wrapped or otherwise', () => {
+    const {
+      pushState,
+      replaceState,
+      forward,
+      back,
+      go
+    } = createRouter(match, dispatch)
 
-  it('should dispatch when `pushState` is called', () => {})
+    expect(pushState).toBeA(Function)
+    expect(pushState).toNotEqual(history.pushState)
 
-  it('should dispatch when `replaceState` is called', () => {})
+    expect(replaceState).toBeA(Function)
+    expect(replaceState).toNotEqual(history.replaceState)
 
-  it('should dispatch when a `popstate event is fired`', () => {})
+    expect(forward).toBeA(Function)
+    expect(forward).toEqual(history.forward)
+
+    expect(back).toBeA(Function)
+    expect(back).toEqual(history.back)
+
+    expect(go).toBeA(Function)
+    expect(go).toEqual(history.go)
+  })
+
+  it('should dispatch when `pushState` is called', () => {
+
+  })
+
+  it('should dispatch when `replaceState` is called', () => {
+
+  })
+
+  it('should dispatch when a `popstate event is fired`', () => {
+
+  })
 })
