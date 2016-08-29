@@ -14,6 +14,7 @@
         "semi": [ "error", "never" ],
         "no-param-reassign": "off",
         "no-unused-expressions": "off",
+        "prefer-arrow-callback": "off",
         "no-underscore-dangle": "off"
     }
 }

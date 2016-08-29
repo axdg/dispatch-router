@@ -4,7 +4,7 @@ import { parse } from 'url'
  * A simple assert.
  */
 
-export function assert(e, msg) {
+function assert(e, msg) {
   if (!e) throw new Error(msg)
 }
 
@@ -19,10 +19,10 @@ export function assert(e, msg) {
  * @param {Function} dispatch
  * @return {Object} wrapped history methods.
  */
+const _window = window
+const dom = !!(window !== undefined && _window.document && _window.document.createElement)
 
-export default function router(match, dispatch) {
-  const _window = new Function('return this')() // eslint-disable-line no-new-func
-  const dom = !!(_window.document && _window.createElement)
+export default function createRouter(match, dispatch) {
   assert(dom, 'dispatch-router can only be used in a browser env')
   assert(typeof match === 'function', '`match` must be a function')
   assert(typeof dispatch === 'function', '`dispatch` must be a function')
@@ -32,7 +32,7 @@ export default function router(match, dispatch) {
    */
 
   function route() {
-    const url = parse(window.location.href)
+    const url = parse(_window.location.href)
     const { params, fn } = match(url.pathname)
     url.params = params
     dispatch(fn(url))
