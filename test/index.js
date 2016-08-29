@@ -41,7 +41,7 @@ function reducer(state = {}, action) {
   return nextState
 }
 
-const { dispatch } = createStore(reducer)
+const { dispatch, getState } = createStore(reducer)
 
 describe('router()', () => {
   it('should throw if match is not a function', () => {
@@ -62,7 +62,7 @@ describe('router()', () => {
       replaceState,
       forward,
       back,
-      go
+      go,
     } = createRouter(match, dispatch)
 
     expect(pushState).toBeA(Function)
@@ -72,24 +72,65 @@ describe('router()', () => {
     expect(replaceState).toNotEqual(history.replaceState)
 
     expect(forward).toBeA(Function)
-    expect(forward).toEqual(history.forward)
 
     expect(back).toBeA(Function)
-    expect(back).toEqual(history.back)
 
     expect(go).toBeA(Function)
-    expect(go).toEqual(history.go)
   })
 
   it('should dispatch when `pushState` is called', () => {
+    const { pushState } = createRouter(match, dispatch)
 
+    pushState('/?x=y')
+    expect(getState().pathname).toBe('/')
+    expect(getState().params.d).toBe('root')
+    expect(getState().query.x).toBe('y')
+
+    pushState('/users')
+    expect(getState().pathname).toBe('/users')
+    expect(getState().params.d).toBe('users')
+
+    pushState('/users/axdg')
+    expect(getState().pathname).toBe('/users/axdg')
+    expect(getState().params.d).toBe('user axdg')
   })
 
   it('should dispatch when `replaceState` is called', () => {
+    const { replaceState } = createRouter(match, dispatch)
 
+    replaceState('/notaroute')
+    expect(getState().pathname).toBe('/notaroute')
+    expect(getState().params.d).toBe('not found')
+
+    replaceState('/users/axdg')
+    expect(getState().pathname).toBe('/users/axdg')
+    expect(getState().params.d).toBe('user axdg')
   })
 
-  it('should dispatch when a `popstate event is fired`', () => {
+  it('should dispatch when a `popstate` event is fired', (done) => {
+    const { forward, back, go } = createRouter(match, dispatch)
+    back()
+    setTimeout(function () {
+      expect(getState().pathname).toBe('/users')
+      expect(getState().params.d).toBe('users')
+      back()
+      setTimeout(function () {
+        expect(getState().pathname).toBe('/')
+        expect(getState().params.d).toBe('root')
+        forward()
+        setTimeout(function () {
+          expect(getState().pathname).toBe('/users')
+          expect(getState().params.d).toBe('users')
+          go(1)
+          setTimeout(function () {
+            expect(getState().pathname).toBe('/users/axdg')
+            expect(getState().params.d).toBe('user axdg')
 
+            // TODO: Pass errors properly and listen to route changes.
+            done()
+          }, 10)
+        }, 10)
+      }, 10)
+    }, 10)
   })
 })
