@@ -1,6 +1,6 @@
 # dispatch-router
 
-> A trie based router for client side redux apps
+> A router for client side redux apps
 
 ### Installation
 

@@ -1,9 +1,4 @@
 import url from 'url'
-import qs from 'query-string'
-
-/**
- * A simple assert.
- */
 
 function assert(e, msg) {
   if (!e) throw new Error(msg)
@@ -14,7 +9,8 @@ function assert(e, msg) {
  * and a redux like `dispatch` function. It returns wrappers around
  * the native browser methods for history manipulation methods and
  * dispatches `fn(url)` whenever history state changes. url is location.href
- * as parsed by node's `url.parse()` with `params` assigned to it.
+ * as parsed by node's `url.parse()` with `params` assigned to it,
+ * if a search string is present, it is parsed with
  *
  * @param {Function} match
  * @param {Function} dispatch
@@ -28,15 +24,10 @@ export default function createRouter(match, dispatch) {
   assert(typeof match === 'function', '`match` must be a function')
   assert(typeof dispatch === 'function', '`dispatch` must be a function')
 
-  /**
-   * Respond to `pushState`, `replaceState` or on a `popstate` event.
-   */
-
   function route() {
-    const _url = JSON.parse(JSON.stringify(url.parse(_window.location.href)))
+    const _url = JSON.parse(JSON.stringify(url.parse(_window.location.href, true)))
     const { params, fn } = match(_url.pathname)
     _url.params = params
-    if (_url.search) _url.query = qs.parse(_url.search)
     dispatch(fn(_url))
   }
 

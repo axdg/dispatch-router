@@ -1,7 +1,7 @@
 {
   "name": "dispatch-mux",
   "version": "0.0.1",
-  "description": "A trie based router for client side redux apps",
+  "description": "A router for client side redux apps",
   "main": "lib/index.js",
   "scripts": {
     "test": "electron-mocha --renderer --compilers js:babel-register",
@@ -27,7 +27,5 @@
     "expect": "^1.19.0",
     "redux": "^3.5.2"
   },
-  "dependencies": {
-    "query-string": "^4.2.2"
-  }
+  "dependencies": {}
 }
