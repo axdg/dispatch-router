@@ -43,20 +43,20 @@ function reducer(state = {}, action) {
 
 const { dispatch, getState } = createStore(reducer)
 
-describe('router()', () => {
-  it('should throw if match is not a function', () => {
+describe('router()', function () {
+  it('should throw if match is not a function', function () {
     expect(function () {
       createRouter('notafunction', dispatch)
     }).toThrow('match')
   })
 
-  it('should throw if dispatch is not a function', () => {
+  it('should throw if dispatch is not a function', function () {
     expect(function () {
       createRouter(match, 'notafunction')
     }).toThrow('dispatch')
   })
 
-  it('should return the relevant history methods, wrapped or otherwise', () => {
+  it('should return the relevant history methods, wrapped or otherwise', function () {
     const {
       pushState,
       replaceState,
@@ -78,7 +78,7 @@ describe('router()', () => {
     expect(go).toBeA(Function)
   })
 
-  it('should dispatch when `pushState` is called', () => {
+  it('should dispatch when `pushState` is called', function () {
     const { pushState } = createRouter(match, dispatch)
 
     pushState('/?x=y')
@@ -95,7 +95,7 @@ describe('router()', () => {
     expect(getState().params.d).toBe('user axdg')
   })
 
-  it('should dispatch when `replaceState` is called', () => {
+  it('should dispatch when `replaceState` is called', function () {
     const { replaceState } = createRouter(match, dispatch)
 
     replaceState('/notaroute')
@@ -107,30 +107,46 @@ describe('router()', () => {
     expect(getState().params.d).toBe('user axdg')
   })
 
-  it('should dispatch when a `popstate` event is fired', (done) => {
-    const { forward, back, go } = createRouter(match, dispatch)
-    back()
-    setTimeout(function () {
-      expect(getState().pathname).toBe('/users')
-      expect(getState().params.d).toBe('users')
-      back()
-      setTimeout(function () {
-        expect(getState().pathname).toBe('/')
-        expect(getState().params.d).toBe('root')
-        forward()
-        setTimeout(function () {
-          expect(getState().pathname).toBe('/users')
-          expect(getState().params.d).toBe('users')
-          go(1)
-          setTimeout(function () {
-            expect(getState().pathname).toBe('/users/axdg')
-            expect(getState().params.d).toBe('user axdg')
+  it('should dispatch when a `popstate` event is fired', function (done) {
+    const {
+      dispatch: _dispatch,
+      getState: _getState,
+      subscribe,
+    } = createStore(reducer)
+    const { pushState, forward, back, go } = createRouter(match, _dispatch)
 
-            // TODO: Pass errors properly and listen to route changes.
-            done()
-          }, 10)
-        }, 10)
-      }, 10)
-    }, 10)
+    pushState('/')
+    pushState('/users')
+    pushState('/users/axdg')
+    pushState('/notaroute')
+
+    const states = []
+    subscribe(function () {
+      states.push(_getState())
+    })
+
+    go(-3)
+    forward()
+    back()
+    forward()
+    forward()
+    back()
+
+    setTimeout(function () {
+      try {
+        expect(states.length).toBe(6)
+        expect(states.map(s => s.params.d)).toEqual([
+          'root',
+          'users',
+          'root',
+          'users',
+          'user axdg',
+          'users',
+        ])
+      } catch (err) {
+        return done(err)
+      }
+      return done()
+    }, 100)
   })
 })

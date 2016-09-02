@@ -4,7 +4,7 @@
   "description": "A router for client side redux apps",
   "main": "lib/index.js",
   "scripts": {
-    "test": "electron-mocha --renderer --compilers js:babel-register",
+    "test": "electron-mocha --slow 300 --renderer --compilers js:babel-register",
     "lint": "eslint src test",
     "compile": "babel src --out-dir lib"
   },
