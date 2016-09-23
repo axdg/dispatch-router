@@ -1,5 +1,3 @@
-import url from 'url'
-
 function assert(e, msg) {
   if (!e) throw new Error(msg)
 }
@@ -16,37 +14,42 @@ function assert(e, msg) {
  * @param {Function} dispatch
  * @return {Object} wrapped history methods.
  */
-const _window = window
-const dom = !!(window !== undefined && _window.document && _window.document.createElement)
-
 export default function createRouter(match, dispatch) {
+  const dom = (window !== undefined && window.document && window.document.createElement)
   assert(dom, 'dispatch-router can only be used in a browser env')
   assert(typeof match === 'function', '`match` must be a function')
   assert(typeof dispatch === 'function', '`dispatch` must be a function')
 
   function route() {
-    const _url = JSON.parse(JSON.stringify(url.parse(_window.location.href, true)))
-    const { params, fn } = match(_url.pathname)
-    _url.params = params
-    dispatch(fn(_url))
+    const { pathname, search, hash } = window.location
+    const { params, fn } = match(pathname)
+
+    dispatch(fn({
+      pathname,
+      params,
+      search,
+      hash,
+    }))
   }
 
-  _window.addEventListener('popstate', function () {
+  window.addEventListener('popstate', function () {
     route()
   })
   route()
 
-  const history = _window.history
+  const history = window.history
 
   return {
     pushState(path) {
       history.pushState(null, null, path)
       route()
     },
+
     replaceState(path) {
       history.replaceState(null, null, path)
       route()
     },
+
     forward: history.forward,
     back: history.back,
     go: history.go,
