@@ -24,6 +24,7 @@ export default function createRouter(match, dispatch) {
     const { pathname, search, hash } = window.location
     const { params, fn } = match(pathname)
 
+    // TODO: Probably only dispatch the params?
     dispatch(fn({
       pathname,
       params,

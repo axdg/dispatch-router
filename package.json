@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "electron-mocha --slow 300 --renderer --compilers js:babel-register",
-    "lint": "eslint src test",
+    "lint": "eslint src test examples",
     "compile": "babel src --out-dir lib"
   },
   "author": "axdg <axdg@dfant.asia>",
